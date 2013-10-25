@@ -43,7 +43,7 @@ io.sockets.on('connection', function (socket) {
   var watcher = fs.watch(filePath, function (event, filename) {
     if (event === 'change') {
       console.log(filename + ' updated');
-      var page = shell.exec('kramdown README').output;
+      var page = shell.exec('kramdown ' + filePath).output;
 
       socket.emit('update', page);
     }
