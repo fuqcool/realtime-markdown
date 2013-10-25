@@ -1,0 +1,14 @@
+<html>
+  <head>
+    <title>Realtime Markdown</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      var socket = io.connect('http://localhost');
+      socket.on('update', function (data) {
+        document.getElementsByTagName('body')[0].innerHTML = data;
+      });
+    </script>
+  </head>
+  <body>
+  </body>
+</html>
