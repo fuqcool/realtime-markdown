@@ -22,52 +22,46 @@ if (program.args.length) {
   process.exit();
 }
 
-var server = http.createServer(handler);
+var server = http.createServer(serverHandler);
 var io = socket.listen(server);
 server.listen(5277);
 
 var VIEWER = 'viewer.html';
 
-function handler(req, res) {
+function serverHandler(req, res) {
   fs.readFile(path.join(__dirname, VIEWER), function (err, view) {
     if (err) {
       console.log('failed to open viewer');
       process.exit();
     }
 
-    render(filePath, function (content) {
-      var output = view.toString().replace(/{{\s*content\s*}}/g, content);
-      res.writeHead(200);
-      res.end(output);
-    });
-  });
-}
-
-function render(filename, cb) {
-  shell.exec('Markdown.pl ' + filename, { silent: true }, function (code, output) {
-    if (code !== 0) {
-      console.log('render markdown error\n', output);
-      return;
-    }
-
-    cb(output);
+    res.writeHead(200);
+    res.end(view);
   });
 }
 
 io.sockets.on('connection', function (socket) {
-  var watcher = fs.watch(filePath, function (event, filename) {
-    if (event === 'change') {
-      console.log(filename + ' updated');
+  function watcherHandler(event, filename) {
+    shell.exec('Markdown.pl ' + filename, { silent: true }, function (code, output) {
+      if (event === 'change') {
+        console.log(filename + ' updated');
+        if (code !== 0) {
+          console.log('render markdown error\n', output);
+          return;
+        }
 
-      render(filename, function (output) {
         socket.emit('update', output);
-      });
-    }
-  });
+      }
+    });
+  };
+
+  var watcher = fs.watch(filePath, watcherHandler);
 
   socket.on('disconnect', function () {
     console.log('disconnected');
     watcher.close();
     process.exit();
   });
+
+  watcherHandler('change', filePath);
 });
