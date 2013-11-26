@@ -29,13 +29,28 @@ server.listen(5277);
 var VIEWER = 'viewer.html';
 
 function handler(req, res) {
-  fs.readFile(path.join(__dirname, VIEWER), function (err, data) {
+  fs.readFile(path.join(__dirname, VIEWER), function (err, view) {
     if (err) {
       console.log('failed to open viewer');
       process.exit();
     }
-    res.writeHead(200);
-    res.end(data);
+
+    render(filePath, function (content) {
+      var output = view.toString().replace(/{{\s*content\s*}}/g, content);
+      res.writeHead(200);
+      res.end(output);
+    });
+  });
+}
+
+function render(filename, cb) {
+  shell.exec('Markdown.pl ' + filename, { silent: true }, function (code, output) {
+    if (code !== 0) {
+      console.log('render markdown error\n', output);
+      return;
+    }
+
+    cb(output);
   });
 }
 
@@ -43,12 +58,9 @@ io.sockets.on('connection', function (socket) {
   var watcher = fs.watch(filePath, function (event, filename) {
     if (event === 'change') {
       console.log(filename + ' updated');
-      shell.exec('kramdown ' + filePath, { silent: true }, function (code, output) {
-        if (code === 0) {
-          socket.emit('update', output);
-        } else {
-          console.log('render markdown error\n', output);
-        }
+
+      render(filename, function (output) {
+        socket.emit('update', output);
       });
     }
   });
