@@ -24,6 +24,8 @@ if (program.args.length) {
 
 var server = http.createServer(serverHandler);
 var io = socket.listen(server);
+io.set('log level', 1);
+
 server.listen(5277);
 
 var VIEWER = 'viewer.html';
@@ -42,7 +44,7 @@ function serverHandler(req, res) {
 
 io.sockets.on('connection', function (socket) {
   function watcherHandler(event, filename) {
-    shell.exec('Markdown.pl ' + filename, { silent: true }, function (code, output) {
+    shell.exec('kramdown ' + filePath, { silent: true }, function (code, output) {
       if (event === 'change') {
         console.log(filename + ' updated');
         if (code !== 0) {
