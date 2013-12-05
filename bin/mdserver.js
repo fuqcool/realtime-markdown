@@ -3,25 +3,19 @@
 'use strict';
 
 var fs = require('fs');
-var program = require('commander');
+var connect = require('connect');
+var path = require('path');
 
-var mdserver = require('../lib/server.js');
+var markdown = require('../lib/server.js');
 
-program.parse(process.argv);
+var defaultDir = process.cwd();
 
-var targetPath = null;
+var app = connect()
+  .use(markdown)
+  .use(connect.static(defaultDir))
+  .use(connect.directory(defaultDir));
 
-if (program.args.length) {
-  targetPath = program.args[0];
-  fs.exists(targetPath, function (exists) {
-    if (!exists) {
-      console.log(targetPath + ' does not exists');
-      process.exit();
-    }
-  });
-} else {
-  console.log('invalid options');
-  process.exit();
-}
+var server = require('http').createServer(app);
 
-mdserver(targetPath);
+server.listen(8000);
+

@@ -1,14 +1,15 @@
 <html>
   <head>
     <title>Realtime Markdown</title>
-    <script src="/socket.io/socket.io.js"></script>
+    <script src="http://127.0.0.1:5277/socket.io/socket.io.js"></script>
     <script>
-      var socket = io.connect('http://localhost');
+      var socket = io.connect('http://localhost:5277');
       socket.on('update', function (data) {
         document.getElementsByTagName('body')[0].innerHTML = data;
       });
     </script>
   </head>
+
   <body>
   </body>
 </html>
