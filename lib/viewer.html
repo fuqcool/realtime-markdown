@@ -3,7 +3,7 @@
     <title>Realtime Markdown</title>
     <script src="http://127.0.0.1:5277/socket.io/socket.io.js"></script>
     <script>
-      var socket = io.connect('http://localhost:5277');
+      var socket = io.connect('http://localhost:5277{{ url }}');
       socket.on('update', function (data) {
         document.getElementsByTagName('body')[0].innerHTML = data;
       });
